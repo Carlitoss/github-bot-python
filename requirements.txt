@@ -2,3 +2,4 @@
 # argparse==1.2.1
 pygithub==1.37
 Flask==0.12.2
+six==1.11.0

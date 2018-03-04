@@ -254,7 +254,8 @@ setup_dict = dict(
     install_requires=[
         # your module dependencies
         'pygithub==1.37',
-        'Flask==0.12.2'
+        'Flask==0.12.2',
+        'six==1.11.0'
     ] + python_version_specific_requires,
     # Allow tests to be run with `python setup.py test'.
     tests_require=[
