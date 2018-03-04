@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from github import Github
 import re
+import logging
+
+log = logging.getLogger()
 
 
 class Bot (object):
@@ -24,11 +27,11 @@ class Bot (object):
 
         :param payload: Webhook payload
         """
-        print('Parsing issue_comment webhook')
+        log.info('Parsing issue_comment webhook')
         matches = re.search(self.bot_re, str(payload['comment']['body']))
         if matches:
             command = matches.group(1)
-            print('Command received: ', command)
+            log.info('Command received: %s', command)
             command_dict = {
                 'say-hello': self.say_hello,
                 'say-goodbye': self.say_goodbye
@@ -37,10 +40,10 @@ class Bot (object):
             try:
                 return command_dict[command](payload)
             except KeyError:
-                print('Unknown command')
+                log.info('Unknown command')
                 return False
         else:
-            print('No action from bot needed')
+            log.info('No action from bot needed')
             return 'No action from bot needed'
 
     def say_hello(self, payload):
@@ -58,7 +61,7 @@ class Bot (object):
             # ...
             return True
         except:
-            print('No PR found with the given number')
+            log.info('No PR found with the given number')
             return False
 
     def say_goodbye(self, payload):
@@ -76,5 +79,5 @@ class Bot (object):
             # ...
             return True
         except:
-            print('No PR found with the given number')
+            log.info('No PR found with the given number')
             return False

@@ -6,10 +6,23 @@ from __future__ import print_function
 import argparse
 import os
 
+import sys
+import logging
+
 from helpers.github_webhook.webhook import Webhook
 from flask import Flask
 
 from bot_module import Bot
+
+log = logging.getLogger()
+console = logging.StreamHandler()
+format_str = '%(asctime)s\t%(levelname)s -- %(processName)s %(filename)s:%(lineno)s -- %(message)s'
+console.setFormatter(logging.Formatter(format_str))
+# print to console.
+log.addHandler(console)
+
+# Log level threshold
+log.setLevel(logging.INFO)
 
 # Get GitHub API token
 github_api_token = os.environ.get('GITHUB_API_TOKEN')
@@ -36,7 +49,7 @@ def bot_is_working():
 # Defines a handler for event 'ping'
 @webhook.hook('ping')
 def on_push(data):
-    print('Got ping from Github')
+    log.info('Got ping from Github')
 
 
 # Defines a handler for event 'issue_comment' and others
@@ -46,7 +59,7 @@ def on_issue_comment(data):
         py_bot.parse_issue_comment_webhook(data)
         return True
     else:
-        print('No action needed, discarding webhook')
+        log.info('No action needed, discarding webhook')
         return False
 
 
@@ -56,7 +69,7 @@ def main(argv):
     :param argv: command-line arguments
     :type argv: :class:`list`
     """
-    from github_bot import metadata
+    import metadata
 
     author_strings = []
     for name, email in zip(metadata.authors, metadata.emails):
@@ -96,4 +109,7 @@ def entry_point():
 
 
 if __name__ == '__main__':
-    entry_point()
+    if len(sys.argv) > 1:
+        main(sys.argv)
+    else:
+        entry_point()
