@@ -55,7 +55,7 @@ def on_push(data):
 # Defines a handler for event 'issue_comment' and others
 @webhook.hook('issue_comment')
 def on_issue_comment(data):
-    if data['action'] == 'created' or 'edited':
+    if data['action'] in ['created', 'edited']:
         py_bot.parse_issue_comment_webhook(data)
         return True
     else:
