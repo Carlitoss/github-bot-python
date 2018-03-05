@@ -6,7 +6,7 @@ import logging
 log = logging.getLogger()
 
 
-class Bot (object):
+class Bot(object):
     """
     Bot class that interacts with GitHub
 
@@ -20,31 +20,38 @@ class Bot (object):
     def __init__(self, api_token):
         self.g = Github(api_token)
         self.is_configured = True
+        self.commands = {
+            'say-hello': self.say_hello,
+            'say-goodbye': self.say_goodbye
+        }
 
-    def parse_issue_comment_webhook(self, payload):
-        """
-        Parses Github comment webhook
+    def _get_pr_from_payload(self, payload):
+        repo = self.g.get_repo(payload['repository']['id'])
+        return repo.get_pull(payload['issue']['number'])
 
-        :param payload: Webhook payload
-        """
-        log.info('Parsing issue_comment webhook')
+    def get_command_from_comment(self, payload):
         matches = re.search(self.bot_re, str(payload['comment']['body']))
         if matches:
             command = matches.group(1)
-            log.info('Command received: %s', command)
-            command_dict = {
-                'say-hello': self.say_hello,
-                'say-goodbye': self.say_goodbye
-            }
-
-            try:
-                return command_dict[command](payload)
-            except KeyError:
-                log.info('Unknown command')
-                return False
+            return command
         else:
-            log.info('No action from bot needed')
-            return 'No action from bot needed'
+            return None
+
+    def handle_comment(self, payload):
+        """
+        Parses Github comment webhook
+        :param payload: Webhook payload
+        """
+        command = self.get_command_from_comment(payload)
+        if command:
+            self.execute_command_with_payload(command, payload)
+
+    def execute_command_with_payload(self, command, payload):
+        try:
+            command_function = self.commands[command]
+            command_function(payload)
+        except KeyError:
+            log.info('Command not found: {}'.format(command))
 
     def say_hello(self, payload):
         """
@@ -53,16 +60,10 @@ class Bot (object):
         :return Whether or not action was successfully completed
         :rtype: bool
         """
-        r = self.g.get_repo(payload['repository']['id'])
-        try:
-            pr = r.get_pull(payload['issue']['number'])
-            pr.create_issue_comment('Hello world')
-            #  Do here some interesting stuff with code, or any automation process
-            # ...
-            return True
-        except:
-            log.info('No PR found with the given number')
-            return False
+        pr = self._get_pr_from_payload(payload)
+        pr.create_issue_comment('Hello world')
+        #  Do here some interesting stuff with code, or any automation process
+        # ...
 
     def say_goodbye(self, payload):
         """
@@ -71,13 +72,7 @@ class Bot (object):
         :return Whether or not action was successfully completed
         :rtype: bool
         """
-        r = self.g.get_repo(payload['repository']['id'])
-        try:
-            pr = r.get_pull(payload['issue']['number'])
-            pr.create_issue_comment('Goodbye')
-            #  Do here some interesting stuff with code, or any automation process
-            # ...
-            return True
-        except:
-            log.info('No PR found with the given number')
-            return False
+        pr = self._get_pr_from_payload(payload)
+        pr.create_issue_comment('Goodbye')
+        #  Do here some interesting stuff with code, or any automation process
+        # ...

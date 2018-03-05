@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import pytest
 from pytest import raises
 from github_bot import metadata

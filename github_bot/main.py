@@ -54,13 +54,11 @@ def on_push(data):
 
 # Defines a handler for event 'issue_comment' and others
 @webhook.hook('issue_comment')
-def on_issue_comment(data):
-    if data['action'] in ['created', 'edited']:
-        py_bot.parse_issue_comment_webhook(data)
-        return True
+def on_issue_comment(hook_payload):
+    if hook_payload['action'] in ['created', 'edited']:
+        py_bot.handle_comment(hook_payload)
     else:
         log.info('No action needed, discarding webhook')
-        return False
 
 
 def main(argv):
