@@ -44,7 +44,7 @@ class Bot(object):
             command_function = self.commands[command]
             command_function(payload)
         except KeyError:
-            log.info('Command not found: {}'.format(command))
+            log.warning('Command not found: {}'.format(command))
 
     def handle_comment(self, payload):
         """
@@ -54,8 +54,6 @@ class Bot(object):
         command = self.get_command_from_comment(payload)
         if command:
             self.execute_command_with_payload(command, payload)
-        else:
-            print('No bot or action in this command')
 
     def say_hello(self, payload):
         """

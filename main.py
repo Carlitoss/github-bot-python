@@ -36,7 +36,7 @@ def main():
 
     # Defines a handler for event 'ping'
     @app.webhook.hook('ping')
-    def on_push():
+    def on_ping():
         log.info('Got ping from Github')
 
     # Defines a handler for event 'issue_comment' and others

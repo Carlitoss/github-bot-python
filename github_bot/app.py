@@ -4,7 +4,7 @@ from __future__ import print_function
 from github_bot.helpers.github_webhook.webhook import Webhook
 from flask import Flask
 
-from github_bot.bot_module.bot import Bot
+from .bot_module.bot import Bot
 
 
 class App():

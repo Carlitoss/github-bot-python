@@ -18,7 +18,7 @@ class Webhook(object):
     def __init__(self, app, endpoint='/webhooks', secret=None):
         app.add_url_rule(rule=endpoint,
                          endpoint=endpoint,
-                         view_func=self._webhooks,
+                         view_func=self._webhooks_view,
                          methods=['POST'])
 
         self._registered_hooks = collections.defaultdict(list)
@@ -41,8 +41,10 @@ class Webhook(object):
 
         return decorator
 
-    def _webhooks(self):
-        """Main function invoked from Flask once endpoint is reached"""
+    def _webhooks_view(self):
+        """
+        Main function invoked from Flask once endpoint is reached
+        """
 
         digest = None
 
@@ -63,10 +65,12 @@ class Webhook(object):
 
         event_type = self._get_header('X-Github-Event')
 
-        for hook in self._registered_hooks.get(event_type, []):  # Dispatch all hook functions
+        # Dispatch all hook functions
+        for hook in self._registered_hooks.get(event_type, []):
             hook(data)
 
-        return 'OK', 202  # Returned a 202 as many hooks could have been triggered
+        # Returned a 202 as many hooks could have been triggered
+        return 'OK', 202
 
     @staticmethod
     def _get_header(key):

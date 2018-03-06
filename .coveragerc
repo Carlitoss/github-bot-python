@@ -1,0 +1,2 @@
+[run]
+omit = github_bot/metadata.py
