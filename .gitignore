@@ -78,4 +78,5 @@ target/
 
 # Pytest cache
 .pytest_cache/
+.cache/
 

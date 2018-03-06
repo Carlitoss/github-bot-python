@@ -145,13 +145,6 @@ def commit():
 @task
 def coverage():
     """Run tests and show test coverage report."""
-    try:
-        import pytest_cov  # NOQA
-    except ImportError:
-        print_failure_message(
-            'Install the pytest coverage plugin to use this task, '
-            "i.e., `pip install pytest-cov'.")
-        raise SystemExit(1)
     import pytest
     pytest.main(PYTEST_FLAGS + [
         '--cov', CODE_DIRECTORY,

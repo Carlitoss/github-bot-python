@@ -38,7 +38,7 @@ sys.path.insert(0, os.path.abspath('.'))
 CODE_DIRECTORY = 'github_bot'
 DOCS_DIRECTORY = 'docs'
 TESTS_DIRECTORY = 'tests'
-PYTEST_FLAGS = ['--doctest-modules']
+PYTEST_FLAGS = ['--doctest-modules', '--verbose']
 
 # Import metadata. Normally this would just be:
 #
@@ -259,8 +259,10 @@ setup_dict = dict(
     ] + python_version_specific_requires,
     # Allow tests to be run with `python setup.py test'.
     tests_require=[
-        'pytest==2.5.1',
-        'mock==1.0.1',
+        'pytest==3.2.2',
+        'py==1.5.2',
+        'mock==2.0.0',
+        'pytest-mock==1.7.1',
         'flake8==2.1.0',
     ],
     cmdclass={'test': TestAllCommand},
