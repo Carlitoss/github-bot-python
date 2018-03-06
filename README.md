@@ -5,7 +5,7 @@ Github bot that interacts with activated repository webhooks. You just need to a
 (or organization) and create a custom hook handler in the code to interact with Github or any other service
 
 Main example provided in this code, reads comments from the repository Pull Requests (indicated by webhook payload) 
-and looks for the bot invocation with a ``@boot do-something`` like command and performs corresponding actions.
+and looks for the bot invocation with a ``@bot do-something`` like command and performs corresponding actions.
 
 
 This project also provides a best-practices template Python project which integrates several different tools.
