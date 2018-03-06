@@ -3,111 +3,54 @@
 """Program entry point"""
 
 from __future__ import print_function
-import argparse
-import os
 
-import sys
 import logging
 
-from helpers.github_webhook.webhook import Webhook
-from flask import Flask
-
-from bot_module import Bot
-
-log = logging.getLogger()
-console = logging.StreamHandler()
-format_str = '%(asctime)s\t%(levelname)s -- %(processName)s %(filename)s:%(lineno)s -- %(message)s'
-console.setFormatter(logging.Formatter(format_str))
-# print to console.
-log.addHandler(console)
-
-# Log level threshold
-log.setLevel(logging.INFO)
-
-# Get GitHub API token
-github_api_token = os.environ.get('GITHUB_API_TOKEN')
-
-# Get GitHub API token
-github_webhook_secret = os.environ.get('GITHUB_WEBHOOK_SECRET')
-
-# Create bot and configure  it
-py_bot = Bot(github_api_token)
-
-# Standard Flask app
-app = Flask(__name__)
-
-# Defines '/webhooks' endpoint
-webhook = Webhook(app, secret=github_webhook_secret)
+from github_bot.app import App
+from settings import GITHUB_API_TOKEN, GITHUB_WEBHOOK_SECRET
 
 
-# Standard Flask endpoint
-@app.route('/')
-def bot_is_working():
-    return "Bot is working"
+def init_log():
+    log = logging.getLogger()
+    console = logging.StreamHandler()
+    format_str = '%(asctime)s\t%(levelname)s -- %(processName)s %(filename)s:%(lineno)s -- %(message)s'
+    console.setFormatter(logging.Formatter(format_str))
+    # print to console.
+    log.addHandler(console)
+    # Log level threshold
+    log.setLevel(logging.INFO)
+
+    return log
 
 
-# Defines a handler for event 'ping'
-@webhook.hook('ping')
-def on_push(data):
-    log.info('Got ping from Github')
-
-
-# Defines a handler for event 'issue_comment' and others
-@webhook.hook('issue_comment')
-def on_issue_comment(hook_payload):
-    if hook_payload['action'] in ['created', 'edited']:
-        py_bot.handle_comment(hook_payload)
-    else:
-        log.info('No action needed, discarding webhook')
-
-
-def main(argv):
-    """Program entry point.
-
-    :param argv: command-line arguments
-    :type argv: :class:`list`
-    """
-    import metadata
-
-    author_strings = []
-    for name, email in zip(metadata.authors, metadata.emails):
-        author_strings.append('Author: {0} <{1}>'.format(name, email))
-
-    epilog = '''
-{project} {version}
-
-{authors}
-URL: <{url}>
-'''.format(
-        project=metadata.project,
-        version=metadata.version,
-        authors='\n'.join(author_strings),
-        url=metadata.url)
-
-    arg_parser = argparse.ArgumentParser(
-        prog=argv[0],
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        description=metadata.description,
-        epilog=epilog)
-    arg_parser.add_argument(
-        '-V', '--version',
-        action='version',
-        version='{0} {1}'.format(metadata.project, metadata.version))
-
-    arg_parser.parse_args(args=argv[1:])
-
-    print(epilog)
-
-    return 0
-
-
-def entry_point():
+def main():
     """Zero-argument entry point for use with setuptools/distribute."""
-    app.run(host="0.0.0.0", port=4567, debug=True)
+    log = init_log()
+
+    app = App(GITHUB_API_TOKEN, GITHUB_WEBHOOK_SECRET)
+
+    # Standard Flask endpoint
+    @app.flask.route('/')
+    def bot_is_working():
+        return "Bot is working"
+
+    # Defines a handler for event 'ping'
+    @app.webhook.hook('ping')
+    def on_push():
+        log.info('Got ping from Github')
+
+    # Defines a handler for event 'issue_comment' and others
+    @app.webhook.hook('issue_comment')
+    def on_issue_comment(hook_payload):
+        if hook_payload['action'] in ['created', 'edited']:
+            app.bot.handle_comment(hook_payload)
+        else:
+            log.info('No action needed, discarding webhook')
+
+    app.flask.run(host="0.0.0.0", port=4567, debug=True)
+
+    return app
 
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        main(sys.argv)
-    else:
-        entry_point()
+    main()

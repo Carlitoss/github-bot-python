@@ -50,7 +50,7 @@ class Webhook(object):
             digest = hmac.new(self._secret, request.data, hashlib.sha1).hexdigest()
 
         if digest is not None:
-            signature_comp = _get_header('X-Hub-Signature').split('=', 1)
+            signature_comp = self._get_header('X-Hub-Signature').split('=', 1)
             if not isinstance(digest, six.text_type):
                 digest = six.text_type(digest)
 
@@ -61,21 +61,21 @@ class Webhook(object):
         if data is None:
             abort(400, 'Request body must contain json')
 
-        event_type = _get_header('X-Github-Event')
+        event_type = self._get_header('X-Github-Event')
 
         for hook in self._registered_hooks.get(event_type, []):  # Dispatch all hook functions
             hook(data)
 
         return 'OK', 202  # Returned a 202 as many hooks could have been triggered
 
+    @staticmethod
+    def _get_header(key):
+        """Get header from a given key
 
-def _get_header(key):
-    """Get header from a given key
+        :param key: Key to search for
+        """
 
-    :param key: Key to search for
-    """
-
-    try:
-        return request.headers[key]
-    except KeyError:
-        abort(400, 'Missing header: ' + key)
+        try:
+            return request.headers[key]
+        except KeyError:
+            abort(400, 'Missing header: ' + key)
